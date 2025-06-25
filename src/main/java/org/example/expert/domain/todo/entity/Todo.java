@@ -7,6 +7,8 @@ import org.example.expert.domain.comment.entity.Comment;
 import org.example.expert.domain.common.entity.Timestamped;
 import org.example.expert.domain.manager.entity.Manager;
 import org.example.expert.domain.user.entity.User;
+import org.example.expert.domain.todo.enums.WeatherType;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +23,10 @@ public class Todo extends Timestamped {
     private Long id;
     private String title;
     private String contents;
-    private String weather;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private WeatherType weather;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -33,7 +38,7 @@ public class Todo extends Timestamped {
     @OneToMany(mappedBy = "todo")
     private List<Manager> managers = new ArrayList<>();
 
-    public Todo(String title, String contents, String weather, User user) {
+    public Todo(String title, String contents, WeatherType weather, User user) {
         this.title = title;
         this.contents = contents;
         this.weather = weather;

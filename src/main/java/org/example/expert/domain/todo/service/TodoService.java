@@ -8,6 +8,7 @@ import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
 import org.example.expert.domain.todo.entity.Todo;
+import org.example.expert.domain.todo.enums.WeatherType;
 import org.example.expert.domain.todo.repository.TodoRepository;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
@@ -16,6 +17,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +32,7 @@ public class TodoService {
     public TodoSaveResponse saveTodo(AuthUser authUser, TodoSaveRequest todoSaveRequest) {
         User user = User.fromAuthUser(authUser);
 
-        String weather = weatherClient.getTodayWeather();
+        WeatherType weather = WeatherType.valueOf(weatherClient.getTodayWeather().toUpperCase());
 
         Todo newTodo = new Todo(
                 todoSaveRequest.getTitle(),
@@ -42,15 +46,25 @@ public class TodoService {
                 savedTodo.getId(),
                 savedTodo.getTitle(),
                 savedTodo.getContents(),
-                weather,
+                weather.toString(),
                 new UserResponse(user.getId(), user.getEmail())
         );
     }
 
-    public Page<TodoResponse> getTodos(int page, int size) {
+    public Page<TodoResponse> getTodos(
+            int page,
+            int size,
+            WeatherType weather,
+            LocalDate startDate,
+            LocalDate endDate) {
+
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
+        //LocalDate로 받은 날짜를 LocalDateTime으로 바꾸기
+        LocalDateTime modifiedAtStart = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime modifiedAtEnd = (endDate != null) ? endDate.plusDays(1).atStartOfDay().minusNanos(1) : null;
+
+        Page<Todo> todos = todoRepository.searchTodos(weather, modifiedAtStart, modifiedAtEnd, pageable);
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),

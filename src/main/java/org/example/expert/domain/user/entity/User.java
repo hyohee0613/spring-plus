@@ -38,14 +38,15 @@ public class User extends Timestamped {
         this.nickName = nickName;
     }
 
-    //AuthUser 객체를 User 객체로 변환
-    public static User fromAuthUser(AuthUser authUser) {
+    //CustomUserDetails 객체를 User 객체로 변환
+    public static User fromAuthUser(CustomUserDetails authUser) {
         return User.builder()
-                .id(authUser.getId())
+                .id(authUser.getUserId())
                 .email(authUser.getEmail())
-                .userRole(authUser.getUserRole())
+                .userRole(UserRole.of(authUser.getRole())) // String role을 enum UserRole로 변환
                 .build();
     }
+
 
     //비번 변경
     public void changePassword(String password) {

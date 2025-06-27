@@ -18,7 +18,8 @@ public interface TodoRepository extends JpaRepository<Todo, Long>, CustomTodoRep
     Page<Todo> findAllByOrderByModifiedAtDesc(Pageable pageable);
 
     //ID 조회
-    @Query("SELECT t FROM Todo t " +
+    @Query("SELECT t " +
+            "FROM Todo t " +
             "LEFT JOIN t.user " +
             "WHERE t.id = :todoId")
     Optional<Todo> findByIdWithUser(@Param("todoId") Long todoId);
